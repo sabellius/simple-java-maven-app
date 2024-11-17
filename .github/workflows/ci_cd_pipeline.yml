@@ -20,7 +20,7 @@ jobs:
       - name: Increment Version
         id: set-version
         run: |
-          OLD_VERSION=mvn help:evaluate -Dexpression=project.version -q -DforceStdout
+          OLD_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           IFS='.' read -r MAJOR MINOR PATCH <<< "$OLD_VERSION"
           NEW_VERSION="$MAJOR.$MINOR.$((PATCH+1))"
           echo $NEW_VERSION > VERSION.txt
