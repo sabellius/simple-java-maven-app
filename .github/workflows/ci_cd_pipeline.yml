@@ -12,10 +12,6 @@ jobs:
   update-app-version:
     name: Update patch version of the app
     runs-on: ubuntu-latest
-  build-and-publish:
-    name: Build and Publish Docker Image
-    runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -32,6 +28,9 @@ jobs:
           echo $NEW_VERSION > VERSION
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
+  build-and-publish:
+    name: Build and Publish Docker Image
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
