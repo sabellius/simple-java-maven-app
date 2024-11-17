@@ -37,7 +37,7 @@ jobs:
           distribution: "temurin"
           architecture: x64
       - name: update pom.xml
-        run: mvn versions:set -DnewVersion=$VERSION
+        run: mvn versions:set -DnewVersion=$NEW_VERSION
       - name: Commit Updated Version
         run: |
           git config --global user.name "github-actions[bot]"
