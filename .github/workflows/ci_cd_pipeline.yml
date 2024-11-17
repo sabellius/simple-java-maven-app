@@ -18,15 +18,22 @@ jobs:
       - name: Increment Version
         id: version
         run: |
-          if [ -f VERSION ]; then
-            OLD_VERSION=$(cat VERSION)
+          if [ -f VERSION.txt ]; then
+            OLD_VERSION=$(cat VERSION.txt)
           else
             OLD_VERSION="1.0.0"
           fi
           IFS='.' read -r MAJOR MINOR PATCH <<< "$OLD_VERSION"
           NEW_VERSION="$MAJOR.$MINOR.$((PATCH+1))"
-          echo $NEW_VERSION > VERSION
+          echo $NEW_VERSION > VERSION.txt
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+      - name: Commit Updated Version
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add VERSION.txt
+          git commit -m "Increment version to ${{ env.NEW_VERSION }}"
+          git push
 
   build-and-publish:
     name: Build and Publish Docker Image
