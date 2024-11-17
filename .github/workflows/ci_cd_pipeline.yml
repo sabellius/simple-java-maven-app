@@ -36,6 +36,7 @@ jobs:
           git push
 
   build-and-publish:
+    needs: update-app-version
     name: Build and Publish Docker Image
     runs-on: ubuntu-latest
     steps:
