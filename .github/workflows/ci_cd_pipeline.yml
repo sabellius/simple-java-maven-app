@@ -12,11 +12,13 @@ jobs:
   update-app-version:
     name: Update patch version of the app
     runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.set-version.outputs.new_version }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
       - name: Increment Version
-        id: version
+        id: set-version
         run: |
           if [ -f VERSION.txt ]; then
             OLD_VERSION=$(cat VERSION.txt)
@@ -27,13 +29,13 @@ jobs:
           NEW_VERSION="$MAJOR.$MINOR.$((PATCH+1))"
           echo $NEW_VERSION > VERSION.txt
           echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-          echo $GITHUB_ENV
+          echo "::set-output name=new_version::$NEW_VERSION"
       - name: Commit Updated Version
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add VERSION.txt
-          git commit -m "Increment version to ${{ env.NEW_VERSION }}"
+          git commit -m "Increment version to ${{ steps.set-version.outputs.new_version }}"
           git push
 
   build-and-publish:
@@ -43,9 +45,6 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
-
-      - name: inspect vars
-        run: echo $GITHUB_ENV
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -53,10 +52,10 @@ jobs:
           password: ${{ env.DOCKER_TOKEN }}
 
       - name: Build Docker Image
-        run: docker build -t sava128/${{ env.REPO_NAME }}:${{ env.NEW_VERSION }} .
+        run: docker build -t sava128/${{ env.REPO_NAME }}:${{ steps.set-version.outputs.new_version }} .
 
       - name: Push Docker Image
-        run: docker push sava128/${{ env.REPO_NAME }}:${{ env.NEW_VERSION }}
+        run: docker push sava128/${{ env.REPO_NAME }}:${{ steps.set-version.outputs.new_version }}
 
   deploy:
     needs: build-and-publish
@@ -71,7 +70,7 @@ jobs:
       - name: Deploy Docker image to EC2
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-          docker pull sava128/${{ env.REPO_NAME }}:${{ env.NEW_VERSION }}
+          docker pull sava128/${{ env.REPO_NAME }}:${{ steps.set-version.outputs.new_version }}
           docker stop $(docker ps -a -q) || true
-          docker run -d -p 80:80 sava128/${{ env.REPO_NAME }}:${{ env.NEW_VERSION }}
+          docker run -d -p 80:80 sava128/${{ env.REPO_NAME }}:${{ steps.set-version.outputs.new_version}}
           EOF
