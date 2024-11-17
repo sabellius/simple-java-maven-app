@@ -52,13 +52,13 @@ jobs:
           password: ${{ env.DOCKER_TOKEN }}
 
       - name: Build Docker Image
-        run: docker build -t sava128/${{ env.REPO_NAME }}:${{ steps.set-version.outputs.new_version }} .
+        run: docker build -t sava128/${{ env.REPO_NAME }}:${{ needs.calculate-version.outputs.new_version }} .
 
       - name: Push Docker Image
-        run: docker push sava128/${{ env.REPO_NAME }}:${{ steps.set-version.outputs.new_version }}
+        run: docker push sava128/${{ env.REPO_NAME }}:${{ needs.calculate-version.outputs.new_version }}
 
   deploy:
-    needs: build-and-publish
+    needs: [update-app-version, build-and-publish]
     name: Deploy image to EC2 instance
     runs-on: ubuntu-latest
 
@@ -70,7 +70,7 @@ jobs:
       - name: Deploy Docker image to EC2
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-          docker pull sava128/${{ env.REPO_NAME }}:${{ steps.set-version.outputs.new_version }}
+          docker pull sava128/${{ env.REPO_NAME }}:${{ needs.calculate-version.outputs.new_version }}
           docker stop $(docker ps -a -q) || true
-          docker run -d -p 80:80 sava128/${{ env.REPO_NAME }}:${{ steps.set-version.outputs.new_version}}
+          docker run -d -p 80:80 sava128/${{ env.REPO_NAME }}:${{ needs.calculate-version.outputs.new_version }}
           EOF
