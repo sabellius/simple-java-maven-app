@@ -69,7 +69,7 @@ jobs:
     name: Deploy image to EC2 instance
     runs-on: ubuntu-latest
     steps:
-      - name: Install SSH Key
+      - name: Install SSH
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
