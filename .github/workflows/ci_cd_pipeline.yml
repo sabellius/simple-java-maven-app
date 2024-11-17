@@ -9,9 +9,28 @@ env:
   DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
 
 jobs:
+  update-app-version:
+    name: Update patch version of the app
+    runs-on: ubuntu-latest
   build-and-publish:
     name: Build and Publish Docker Image
     runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Increment Version
+        id: version
+        run: |
+          if [ -f VERSION ]; then
+            OLD_VERSION=$(cat VERSION)
+          else
+            OLD_VERSION="1.0.0"
+          fi
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$OLD_VERSION"
+          NEW_VERSION="$MAJOR.$MINOR.$((PATCH+1))"
+          echo $NEW_VERSION > VERSION
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
 
     steps:
       - name: Checkout Code
@@ -23,14 +42,14 @@ jobs:
           password: ${{ env.DOCKER_TOKEN }}
 
       - name: Build Docker Image
-        run: docker build -t sava128/${{ env.REPO_NAME }}:${{ github.sha }} .
+        run: docker build -t sava128/${{ env.REPO_NAME }}:${{ env.NEW_VERSION }} .
 
       - name: Push Docker Image
-        run: docker push sava128/${{ env.REPO_NAME }}:${{ github.sha }}
+        run: docker push sava128/${{ env.REPO_NAME }}:${{ env.NEW_VERSION }}
 
   deploy:
     needs: build-and-publish
-    name: deploy image
+    name: Deploy image to EC2 instance
     runs-on: ubuntu-latest
 
     steps:
@@ -41,7 +60,7 @@ jobs:
       - name: Deploy Docker image to EC2
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-          docker pull sava128/${{ env.REPO_NAME }}:${{ github.sha }}
+          docker pull sava128/${{ env.REPO_NAME }}:${{ env.NEW_VERSION }}
           docker stop $(docker ps -a -q) || true
-          docker run -d -p 80:80 sava128/${{ env.REPO_NAME }}:${{ github.sha }}
+          docker run -d -p 80:80 sava128/${{ env.REPO_NAME }}:${{ env.NEW_VERSION }}
           EOF
