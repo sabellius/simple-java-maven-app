@@ -43,6 +43,9 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: inspect vars
+        run: echo $GITHUB_ENV
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
