@@ -20,11 +20,7 @@ jobs:
       - name: Increment Version
         id: set-version
         run: |
-          if [ -f VERSION.txt ]; then
-            OLD_VERSION=$(cat VERSION.txt)
-          else
-            OLD_VERSION="1.0.0"
-          fi
+          OLD_VERSION=mvn help:evaluate -Dexpression=project.version -q -DforceStdout
           IFS='.' read -r MAJOR MINOR PATCH <<< "$OLD_VERSION"
           NEW_VERSION="$MAJOR.$MINOR.$((PATCH+1))"
           echo $NEW_VERSION > VERSION.txt
