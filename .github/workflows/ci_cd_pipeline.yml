@@ -36,8 +36,8 @@ jobs:
           java-version: "17"
           distribution: "temurin"
           architecture: x64
-          run: |
-            mvn versions:set -DnewVersion=$VERSION
+        run: |
+          mvn versions:set -DnewVersion=$VERSION
 
       - name: Commit Updated Version
         run: |
