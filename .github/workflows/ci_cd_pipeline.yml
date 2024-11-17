@@ -55,13 +55,13 @@ jobs:
 
     steps:
       - name: install ssh keys
-        # check this thread to understand why its needed:
-        # <https://stackoverflow.com/a/70447517>
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Deploy Docker image to EC2
         run: |
-          install -m 600 -D /dev/null ~/.ssh/id_rsa
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} > ~/.ssh/known_hosts
-      - name: connect and pull
-        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && docker run sava128/${{ env.REPO_NAME }}:${{ github.sha }} && exit"
-      - name: cleanup
-        run: rm -rf ~/.ssh
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          docker pull sava128/REPO_NAME:${{ github.sha }}
+          docker stop $(docker ps -a -q) || true
+          docker run -d -p 80:80 sava128/REPO_NAME:${{ github.sha }}
+          EOF
