@@ -46,7 +46,7 @@ jobs:
         run: docker build -t ${{ env.DOCKER_USERNAME }}/:${{ github.sha }} .
 
       - name: Push Docker Image
-        run: docker push ${{ env.DOCKER_USERNAME }}/${{REPO_NAME}}:${{ github.sha }}
+        run: docker push ${{ env.DOCKER_USERNAME }}/${{ env.REPO_NAME }}:${{ github.sha }}
   # jobs:
 #   build:
 #     runs-on: ubuntu-latest
