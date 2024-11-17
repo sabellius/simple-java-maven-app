@@ -5,7 +5,7 @@ COPY . .
 
 # Set up Git configuration (use the GitHub token as a secret)
 ARG REPO_PAT
-# ENV GITHUB_TOKEN=$GITHUB_TOKEN
+ENV GITHUB_TOKEN=$GITHUB_TOKEN
 
 RUN git config --global user.name "github-actions[bot]" && git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
