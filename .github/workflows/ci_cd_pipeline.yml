@@ -34,7 +34,7 @@ jobs:
           architecture: x64
 
       - name: Update pom.xml
-        run: mvn versions:set -DnewVersion=$NEW_VERSION
+        run: mvn versions:set -DnewVersion=${{ steps.set-version.outputs.new_version }}
 
       - name: Commit Updated Version
         run: |
