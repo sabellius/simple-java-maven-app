@@ -1,4 +1,5 @@
 FROM maven:3.9-sapmachine-23 AS builder
+WORKDIR /app
 
 COPY . .
 
