@@ -52,10 +52,10 @@ jobs:
           password: ${{ env.DOCKER_TOKEN }}
 
       - name: Build Docker Image
-        run: docker build -t sava128/${{ env.REPO_NAME }}:${{ needs.update-app-version.outputs.new_version }} .
+        run: docker build -t ${{ env.DOCKER_USERNAME }}/${{ env.REPO_NAME }}:${{ needs.update-app-version.outputs.new_version }} .
 
       - name: Push Docker Image
-        run: docker push sava128/${{ env.REPO_NAME }}:${{ needs.update-app-version.outputs.new_version }}
+        run: docker push ${{ env.DOCKER_USERNAME }}/${{ env.REPO_NAME }}:${{ needs.update-app-version.outputs.new_version }}
 
   deploy:
     needs: [update-app-version, build-and-publish]
@@ -70,7 +70,7 @@ jobs:
       - name: Deploy Docker image to EC2
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-          docker pull sava128/${{ env.REPO_NAME }}:${{ needs.update-app-version.outputs.new_version }}
+          docker pull ${{ env.DOCKER_USERNAME }}/${{ env.REPO_NAME }}:${{ needs.update-app-version.outputs.new_version }}
           docker stop $(docker ps -a -q) || true
-          docker run -d -p 80:80 sava128/${{ env.REPO_NAME }}:${{ needs.update-app-version.outputs.new_version }}
+          docker run -d -p 80:80 ${{ env.DOCKER_USERNAME }}/${{ env.REPO_NAME }}:${{ needs.update-app-version.outputs.new_version }}
           EOF
