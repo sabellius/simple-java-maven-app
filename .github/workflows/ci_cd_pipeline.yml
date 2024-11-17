@@ -61,7 +61,7 @@ jobs:
       - name: Deploy Docker image to EC2
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
-          docker pull sava128/${{ REPO_NAME }}:${{ github.sha }}
+          docker pull sava128/${{ env.REPO_NAME }}:${{ github.sha }}
           docker stop $(docker ps -a -q) || true
-          docker run -d -p 80:80 sava128/${{ REPO_NAME }}:${{ github.sha }}
+          docker run -d -p 80:80 sava128/${{ env.REPO_NAME }}:${{ github.sha }}
           EOF
