@@ -1,7 +1,7 @@
 FROM maven:3.9-sapmachine-23 AS builder
-WORKDIR /app
 
-COPY . .
+COPY . /app
+WORKDIR /app
 
 # Set up Git configuration (use the GitHub token as a secret)
 # ARG REPO_PAT
